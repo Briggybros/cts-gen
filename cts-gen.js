@@ -26,16 +26,79 @@ function randomIntFromInterval(min, max) {
 }
 
 /**
+ * @param {number} a
+ * @returns {string}
+ */
+function formatA(a) {
+  switch (a) {
+    case 1:
+      return '';
+    default:
+      return `${a}`;
+  }
+}
+
+/**
+ * @param {number} b
+ * @returns {string}
+ */
+function formatB(b) {
+  switch (b) {
+    case 1:
+      return '';
+    default:
+      return `${b}`;
+  }
+}
+
+/**
+ * @param {number} c
+ * @returns {string}
+ */
+function formatC(c) {
+  return `${c}`;
+}
+
+/**
+ * @param {number} d
+ * @returns {string}
+ */
+function formatD(d) {
+  return `${d}`;
+}
+
+/**
+ * @param {number} e
+ * @returns {string}
+ */
+function formatE(e) {
+  return `${e}`;
+}
+
+/**
+ * @param {Object} qnums
+ */
+function mathFormat(qnums) {
+  return {
+    a: formatA(qnums.a),
+    b: formatB(qnums.b),
+    c: formatC(qnums.c),
+    d: formatD(qnums.d),
+    e: formatE(qnums.e),
+  };
+}
+
+/**
  * A Question object representing the values of a Complete the Square question in the form of:
  *
  * ax^2 + bx + c = a(x + d)^2 + e
  *
  * @typedef {Object} Question
- * @property {number} a
- * @property {number} b
- * @property {number} c
- * @property {number} d
- * @property {number} e
+ * @property {string} a
+ * @property {string} b
+ * @property {string} c
+ * @property {string} d
+ * @property {string} e
  */
 
 /**
@@ -48,9 +111,9 @@ function generateQuestion() {
 
   const b = 2 * a * d;
   const c = e + (b * b) / (4 * a);
-  return {
+  return mathFormat({
     a, b, c, d, e,
-  };
+  });
 }
 
 /**
