@@ -197,10 +197,16 @@ function onGenerate() {
     const question = generateQuestion({
       includeC: includeCInput.checked,
       allowA: allowAInput.checked,
-      allowNegativeA: allowNegativeAInput.checked,
+      allowNegativeA: allowAInput.checked || allowNegativeAInput.checked,
     });
     const line = createQuestionLineElement(question, i + 1);
     questionsContainer.appendChild(line);
   }
 }
 generateButton.addEventListener('click', onGenerate);
+
+function onAllowAInputChanged() {
+  allowNegativeAInput.disabled = !this.checked;
+}
+
+allowAInput.addEventListener('change', onAllowAInputChanged);
