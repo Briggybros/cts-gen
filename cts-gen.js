@@ -1,11 +1,23 @@
 /**
  * @type HTMLInputElement
  */
-const gencount = document.querySelector('input#gencount');
+const includeCInput = document.querySelector('input#include-c');
+/**
+ * @type HTMLInputElement
+ */
+const allowAInput = document.querySelector('input#allow-a');
+/**
+ * @type HTMLInputElement
+ */
+const allowNegativeAInput = document.querySelector('input#allow-negative-a');
+/**
+ * @type HTMLInputElement
+ */
+const gencountInput = document.querySelector('input#gencount');
 /**
  * @type HTMLButtonElement
  */
-const generate = document.querySelector('button#generate');
+const generateButton = document.querySelector('button#generate');
 /**
  * @type Element
  */
@@ -26,94 +38,85 @@ function randomIntFromInterval(min, max) {
 }
 
 /**
- * @param {number} a
- * @returns {string}
- */
-function formatA(a) {
-  switch (a) {
-    case 1:
-      return '';
-    default:
-      return `${a}`;
-  }
-}
-
-/**
- * @param {number} b
- * @returns {string}
- */
-function formatB(b) {
-  switch (b) {
-    case 1:
-      return '';
-    default:
-      return `${b}`;
-  }
-}
-
-/**
- * @param {number} c
- * @returns {string}
- */
-function formatC(c) {
-  return `${c}`;
-}
-
-/**
- * @param {number} d
- * @returns {string}
- */
-function formatD(d) {
-  return `${d}`;
-}
-
-/**
- * @param {number} e
- * @returns {string}
- */
-function formatE(e) {
-  return `${e}`;
-}
-
-/**
- * @param {Object} qnums
- */
-function mathFormat(qnums) {
-  return {
-    a: formatA(qnums.a),
-    b: formatB(qnums.b),
-    c: formatC(qnums.c),
-    d: formatD(qnums.d),
-    e: formatE(qnums.e),
-  };
-}
-
-/**
  * A Question object representing the values of a Complete the Square question in the form of:
  *
  * ax^2 + bx + c = a(x + d)^2 + e
  *
  * @typedef {Object} Question
- * @property {string} a
- * @property {string} b
- * @property {string} c
- * @property {string} d
- * @property {string} e
+ * @property {number} a
+ * @property {number} b
+ * @property {number} c
+ * @property {number} d
+ * @property {number} e
  */
 
 /**
+ * @param {Object} options
+ * @param {boolean} options.includeC Allow for a C term to be generated
+ * @param {boolean} options.allowA Allow for A term to not be 1
+ * @param {boolean} options.allowNegativeA Allow for A term to be negative
  * @returns {Question}
  */
-function generateQuestion() {
-  const a = randomIntFromInterval(1, 10);
+function generateQuestion({ includeC = false, allowA = false, allowNegativeA = false } = {}) {
+  let a = 1;
+  if (allowA) {
+    a = randomIntFromInterval(1, 10);
+    if (allowNegativeA) {
+      if (randomIntFromInterval(0, 1) === 1) {
+        a = -a;
+      }
+    }
+  }
   const d = randomIntFromInterval(1, 10);
-  const e = randomIntFromInterval(1, 10);
 
   const b = 2 * a * d;
-  const c = e + (b * b) / (4 * a);
-  return mathFormat({
+
+  const f = (b * b) / (4 * a);
+
+  let e;
+  if (includeC) {
+    e = randomIntFromInterval(1, 10);
+  } else {
+    e = -f;
+  }
+  const c = e + f;
+  return {
     a, b, c, d, e,
-  });
+  };
+}
+
+/**
+ * @param {number} x
+ * @returns {string} "+" or "-"
+ */
+function sign(x) {
+  return x >= 0 ? '+' : '-';
+}
+
+/**
+ * @param {Array<number>} poly
+ * @returns {string}
+ */
+function formatPoly(poly) {
+  return poly.reduce((acc, num, idx, arr) => {
+    if (num === 0) return acc;
+
+    let signStr = sign(num);
+    if (num > 0 && idx === 0) signStr = '';
+
+    const pow = (arr.length - 1) - idx;
+    const x = pow !== 0 ? 'x' : '';
+    const powStr = (pow > 1) ? `<sup>${pow}</sup>` : '';
+
+    let numStr = `${Math.abs(num)}`;
+    if (pow > 0) {
+      if (num === 1) {
+        numStr = '';
+      }
+    }
+
+    return `${acc} ${signStr}${idx !== 0 ? ' ' : ''}${numStr}${x}${powStr}`;
+  }, '').trim();
 }
 
 /**
@@ -129,8 +132,17 @@ function createQuestionElement({
   a, b, c,
 }, num) {
   const span = document.createElement('span');
-  span.innerHTML = `Q ${num}) ${a}x<sup>2</sup> + ${b}x + ${c}`;
+  span.innerHTML = `Q ${num}) ${formatPoly([a, b, c])}`;
   return span;
+}
+
+function formatCompletedSquare({ a, d, e }) {
+  const aStr = a !== 1 ? `${a}` : '';
+
+  const eSign = sign(e);
+  const eStr = e !== 0 ? `${eSign} ${Math.abs(e)}` : '';
+
+  return `${aStr}(${formatPoly([1, d])})<sup>2</sup> ${eStr}`.trim();
 }
 
 /**
@@ -143,7 +155,7 @@ function createQuestionElement({
  */
 function createAnswerElement({ a, d, e }) {
   const span = document.createElement('span');
-  span.innerHTML = ` = ${a}(x + ${d})<sup>2</sup> + ${e}`;
+  span.innerHTML = ` = ${formatCompletedSquare({ a, d, e })}`;
   return span;
 }
 
@@ -178,13 +190,17 @@ function createQuestionLineElement(question, num) {
  * @param {MouseEvent} ev
  */
 function onGenerate() {
-  const num = gencount.value;
+  const num = gencountInput.value;
   clearQuestions();
   // eslint-disable-next-line no-plusplus
   for (let i = 0; i < num; i++) {
-    const question = generateQuestion();
+    const question = generateQuestion({
+      includeC: includeCInput.checked,
+      allowA: allowAInput.checked,
+      allowNegativeA: allowNegativeAInput.checked,
+    });
     const line = createQuestionLineElement(question, i + 1);
     questionsContainer.appendChild(line);
   }
 }
-generate.addEventListener('click', onGenerate);
+generateButton.addEventListener('click', onGenerate);
