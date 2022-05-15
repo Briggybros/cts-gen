@@ -1,0 +1,23 @@
+{
+  "name": "cts-gen",
+  "version": "1.0.0",
+  "description": "Randomly generate quadratics to complete the square",
+  "scripts": {
+    "lint": "eslint ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Briggybros/cts-gen.git"
+  },
+  "author": "Gregory Sims <briggybros.2@googlemail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Briggybros/cts-gen/issues"
+  },
+  "homepage": "https://github.com/Briggybros/cts-gen#readme",
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0"
+  }
+}
